@@ -61,3 +61,35 @@ def test_should_decrease_available_places(mock_data):
         },
     )
     assert int(server.competitions[0]["numberOfPlaces"]) == initial_number_of_places - 5
+
+
+def test_zero_points_available(mock_data):
+
+    server.clubs[0]["points"] = int(server.clubs[0]["points"]) - int(
+        server.clubs[0]["points"]
+    )
+
+    response = server.app.test_client().post(
+        "/purchasePlaces",
+        data={
+            "competition": server.competitions[0]["name"],
+            "club": server.clubs[0]["name"],
+            "places": 1,
+        },
+    )
+
+    assert response.status_code == 403
+
+
+def test_purchase_more_than_twelve(mock_data):
+
+    response = server.app.test_client().post(
+        "/purchasePlaces",
+        data={
+            "competition": server.competitions[0]["name"],
+            "club": server.clubs[0]["name"],
+            "places": 13,
+        },
+    )
+
+    assert response.status_code == 403

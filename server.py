@@ -15,6 +15,7 @@ def loadCompetitions():
 
 
 app = Flask(__name__)
+app.config["DEBUG"] = True
 app.secret_key = "something_special"
 
 competitions = loadCompetitions()
@@ -56,9 +57,11 @@ def purchasePlaces():
     ]
     club = [c for c in clubs if c["name"] == request.form["club"]][0]
     placesRequired = int(request.form["places"])
-    if placesRequired > int(club["points"]):
+    if placesRequired > int(club["points"]) or int(club["points"]) <= 0:
         abort(403, description="Not enough points")
         return render_template("welcome.html", club=club, competitions=competitions)
+    elif placesRequired > 12:
+        abort(403, description="Impossible to purchase more than 12 places")
     else:
         competition["numberOfPlaces"] = (
             int(competition["numberOfPlaces"]) - placesRequired

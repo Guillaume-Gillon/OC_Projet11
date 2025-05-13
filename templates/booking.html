@@ -7,11 +7,26 @@
 <body>
     <h2>{{competition['name']}}</h2>
     Places available: {{competition['numberOfPlaces']}}
-    <form action="/purchasePlaces" method="post">
-        <input type="hidden" name="club" value="{{club['name']}}">
-        <input type="hidden" name="competition" value="{{competition['name']}}">
-        <label for="places">How many places?</label><input type="number" name="places" id=""/>
-        <button type="submit">Book</button>
-    </form>
+
+    {% if club['points']|int == 0 %}
+        <p>You don't have any points to spend.</p>
+
+    {% else %}
+        <form action="/purchasePlaces" method="post">
+            <input type="hidden" name="club" value="{{club['name']}}">
+            <input type="hidden" name="competition" value="{{competition['name']}}">
+            
+            <label for="places">How many places?</label>
+            <select name="places" id="places">
+                {% for i in range(1, competition['numberOfPlaces']|int + 1) %}
+                    {% if i <= 12 and club['points']|int >= i %}
+                        <option value="{{ i }}">{{ i }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            
+            <button type="submit">Book</button>
+        </form>
+    {% endif %}
 </body>
 </html>

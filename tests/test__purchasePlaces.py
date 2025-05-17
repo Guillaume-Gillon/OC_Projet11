@@ -99,3 +99,13 @@ def test_booking_places_in_past_competition(mock_data):
     response = post_data(competition, club, 1)
 
     assert response.status_code == 403
+
+
+def test_should_decrease_available_points(mock_data):
+
+    competition, club = get_competition_and_club_names()
+    points_before_purchase = int(server.clubs[0]["points"])
+    purchased_places = 1
+    post_data(competition, club, purchased_places)
+
+    assert server.clubs[0]["points"] == points_before_purchase - purchased_places

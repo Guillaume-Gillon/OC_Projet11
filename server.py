@@ -81,9 +81,15 @@ def purchasePlaces():
 
     elif placesRequired > 12:
         abort(403, description="Impossible to purchase more than 12 places")
+        return render_template("welcome.html", club=club, competitions=competitions)
+
+    elif int(competition["numberOfPlaces"]) < placesRequired:
+        abort(403, description="Not enough places available")
+        return render_template("welcome.html", club=club, competitions=competitions)
 
     elif competition_date < now:
         abort(403, description="Impossible to purchase places of an ended competition")
+        return render_template("welcome.html", club=club, competitions=competitions)
 
     else:
         competition["numberOfPlaces"] = (

@@ -6,7 +6,8 @@ from flask import Flask, render_template, request, redirect, flash, url_for, abo
 def loadClubs():
     with open("clubs.json") as c:
         listOfClubs = json.load(c)["clubs"]
-        return listOfClubs
+        sortedListOfClubs = sorted(listOfClubs, key=lambda club: club["name"])
+        return sortedListOfClubs
 
 
 def loadCompetitions():
@@ -15,12 +16,31 @@ def loadCompetitions():
         return listOfCompetitions
 
 
+def purchase_validation(competition, club, placesRequired, competition_date):
+    if placesRequired > int(club["points"]) or int(club["points"]) <= 0:
+        return False, "Not enough points"
+
+    elif placesRequired > 12:
+        return False, "Impossible to purchase more than 12 places"
+
+    elif int(competition["numberOfPlaces"]) < placesRequired:
+        return False, "Not enough places available"
+
+    elif competition_date < now:
+        return False, "Impossible to purchase places of an ended competition"
+
+    else:
+        return True, ""
+
+
 app = Flask(__name__)
-app.config["DEBUG"] = True
 app.secret_key = "something_special"
 
 competitions = loadCompetitions()
 clubs = loadClubs()
+
+competitions_db = "competitions.json"
+clubs_db = "clubs.json"
 
 now = datetime.now()
 strptime = datetime.strptime
@@ -75,27 +95,25 @@ def purchasePlaces():
     placesRequired = int(request.form["places"])
     competition_date = datetime.strptime(competition["date"], "%Y-%m-%d %H:%M:%S")
 
-    if placesRequired > int(club["points"]) or int(club["points"]) <= 0:
-        abort(403, description="Not enough points")
-        return render_template("welcome.html", club=club, competitions=competitions)
+    validation, description = purchase_validation(
+        competition, club, placesRequired, competition_date
+    )
 
-    elif placesRequired > 12:
-        abort(403, description="Impossible to purchase more than 12 places")
-        return render_template("welcome.html", club=club, competitions=competitions)
-
-    elif int(competition["numberOfPlaces"]) < placesRequired:
-        abort(403, description="Not enough places available")
-        return render_template("welcome.html", club=club, competitions=competitions)
-
-    elif competition_date < now:
-        abort(403, description="Impossible to purchase places of an ended competition")
-        return render_template("welcome.html", club=club, competitions=competitions)
+    if not validation:
+        abort(403, description=description)
 
     else:
         competition["numberOfPlaces"] = (
             int(competition["numberOfPlaces"]) - placesRequired
         )
         club["points"] = int(club["points"]) - placesRequired
+
+        with open(competitions_db, "w") as comp_file:
+            json.dump(competitions, comp_file, indent=4)
+
+        with open(clubs_db, "w") as clubs_file:
+            json.dump(clubs, clubs_file, indent=4)
+
         flash("Great-booking complete!")
         return render_template(
             "welcome.html",
@@ -106,7 +124,9 @@ def purchasePlaces():
         )
 
 
-# TODO: Add route for points display
+@app.route("/clubs")
+def list_clubs():
+    return render_template("clubs.html", clubs=clubs)
 
 
 @app.route("/logout")

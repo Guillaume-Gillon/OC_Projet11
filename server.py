@@ -6,7 +6,8 @@ from flask import Flask, render_template, request, redirect, flash, url_for, abo
 def loadClubs():
     with open("clubs.json") as c:
         listOfClubs = json.load(c)["clubs"]
-        return listOfClubs
+        sortedListOfClubs = sorted(listOfClubs, key=lambda club: club["name"])
+        return sortedListOfClubs
 
 
 def loadCompetitions():
@@ -100,7 +101,9 @@ def purchasePlaces():
         )
 
 
-# TODO: Add route for points display
+@app.route("/clubs")
+def list_clubs():
+    return render_template("clubs.html", clubs=clubs)
 
 
 @app.route("/logout")

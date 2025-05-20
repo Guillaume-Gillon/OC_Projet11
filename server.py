@@ -114,7 +114,9 @@ def purchasePlaces():
         with open(clubs_db, "w") as clubs_file:
             json.dump(clubs, clubs_file, indent=4)
 
-        flash("Great-booking complete!")
+        flash(
+            f"Booking {placesRequired} place(s) for '{competition['name']}' complete! ({club["points"]} points available now)"
+        )
         return render_template(
             "welcome.html",
             club=club,

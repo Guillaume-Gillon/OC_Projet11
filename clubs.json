@@ -1,17 +1,25 @@
-[
-    {
-        "name": "Iron Temple",
-        "email": "admin@irontemple.com",
-        "points": "4"
-    },
-    {
-        "name": "She Lifts",
-        "email": "kate@shelifts.co.uk",
-        "points": "12"
-    },
-    {
-        "name": "Simply Lift",
-        "email": "john@simplylift.co",
-        "points": 12
-    }
-]
+{
+    "clubs": [
+        {
+            "name": "Iron Temple",
+            "email": "admin@irontemple.com",
+            "points": "4"
+        },
+        {
+            "name": "She Lifts",
+            "email": "kate@shelifts.co.uk",
+            "points": "6",
+            "booking": [
+                {
+                    "competition_name": "Spring Festival",
+                    "numberOfBookedPlaces": "10"
+                }
+            ]
+        },
+        {
+            "name": "Simply Lift",
+            "email": "john@simplylift.co",
+            "points": "12"
+        }
+    ]
+}

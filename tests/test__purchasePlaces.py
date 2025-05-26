@@ -21,7 +21,19 @@ def mock_data(monkeypatch, tmp_path):
         monkeypatch.setattr(
             server,
             "clubs",
-            [{"name": "Simply Lift", "email": "john@simplylift.co", "points": "5"}],
+            [
+                {
+                    "name": "Simply Lift",
+                    "email": "john@simplylift.co",
+                    "points": "5",
+                    "booking": [
+                        {
+                            "competition_name": "Spring Festival",
+                            "numberOfBookedPlaces": "0",
+                        }
+                    ],
+                }
+            ],
         )
         monkeypatch.setattr(
             server,
@@ -81,6 +93,20 @@ def test_purchase_more_than_twelve(mock_data):
     assert post_data(13).status_code == 403
 
 
+def test_more_than_twelve_with_ten_already_booked(mock_data):
+    booked_places_entry = server.clubs[0]["booking"][0]
+    booked_places_entry["numberOfBookedPlaces"] = 10
+    purchased_places = 3
+    assert post_data(purchased_places).status_code == 403
+
+
+def test_less_than_twelve_with_ten_already_booked(mock_data):
+    booked_places_entry = server.clubs[0]["booking"][0]
+    booked_places_entry["numberOfBookedPlaces"] = 10
+    purchased_places = 1
+    assert post_data(purchased_places).status_code == 200
+
+
 def test_booking_places_in_past_competition(mock_data):
     server.competitions[0]["date"] = "2020-10-22 13:30:00"
     assert post_data(1).status_code == 403
@@ -90,7 +116,7 @@ def test_should_decrease_available_points(mock_data):
     points_before_purchase = int(server.clubs[0]["points"])
     purchased_places = 1
     post_data(purchased_places)
-    assert server.clubs[0]["points"] == points_before_purchase - purchased_places
+    assert int(server.clubs[0]["points"]) == points_before_purchase - purchased_places
 
 
 def test_not_enough_places_available(mock_data):

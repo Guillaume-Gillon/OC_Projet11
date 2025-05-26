@@ -30,7 +30,36 @@ def purchase_validation(competition, club, placesRequired, competition_date):
         return False, "Impossible to purchase places of an ended competition"
 
     else:
-        return True, ""
+        if "booking" not in club:
+            return True, ""
+        else:
+            booking_exists_for_this_competition = False
+            for booked_places in club["booking"]:
+                if booked_places["competition_name"] == competition["name"]:
+                    booking_exists_for_this_competition = True
+                    if (
+                        int(booked_places["numberOfBookedPlaces"]) + int(placesRequired)
+                        > 12
+                    ):
+                        possible_purchase = 12 - int(
+                            booked_places["numberOfBookedPlaces"]
+                        )
+                        if possible_purchase <= 0:
+                            return (
+                                False,
+                                "You already have 12 places booked, you can't purchase more places.",
+                            )
+                        else:
+                            return (
+                                False,
+                                f"You can't purchase more than {possible_purchase} place(s)",
+                            )
+                    return True, ""
+
+            if not booking_exists_for_this_competition:
+                return True, ""
+
+    return True, ""
 
 
 app = Flask(__name__)
@@ -72,8 +101,19 @@ def book(competition, club):
     foundClub = [c for c in clubs if c["name"] == club][0]
     foundCompetition = [c for c in competitions if c["name"] == competition][0]
     if foundClub and foundCompetition:
+        booking_possibility = 12
+        if "booking" in foundClub:
+            for booked_places in foundClub["booking"]:
+                if booked_places["competition_name"] == foundCompetition["name"]:
+                    booking_possibility = 12 - int(
+                        booked_places["numberOfBookedPlaces"]
+                    )
+                    break
         return render_template(
-            "booking.html", club=foundClub, competition=foundCompetition
+            "booking.html",
+            club=foundClub,
+            competition=foundCompetition,
+            booking_possibility=booking_possibility,
         )
     else:
         flash("Something went wrong-please try again")
@@ -103,16 +143,36 @@ def purchasePlaces():
         abort(403, description=description)
 
     else:
-        competition["numberOfPlaces"] = (
+        competition["numberOfPlaces"] = str(
             int(competition["numberOfPlaces"]) - placesRequired
         )
-        club["points"] = int(club["points"]) - placesRequired
+        club["points"] = str(int(club["points"]) - placesRequired)
+
+        if "booking" not in club:
+            club["booking"] = [
+                {
+                    "competition_name": competition["name"],
+                    "numberOfBookedPlaces": str(placesRequired),
+                }
+            ]
+        else:
+            for booked_place_entry in club["booking"]:
+                if booked_place_entry["competition_name"] == competition["name"]:
+                    current_booked = int(booked_place_entry["numberOfBookedPlaces"])
+                    total_after_purchase = current_booked + placesRequired
+                    booked_place_entry["numberOfBookedPlaces"] = str(
+                        total_after_purchase
+                    )
+                    break
+
+        competitions_data = {"competitions": competitions}
+        clubs_data = {"clubs": clubs}
 
         with open(competitions_db, "w") as comp_file:
-            json.dump(competitions, comp_file, indent=4)
+            json.dump(competitions_data, comp_file, indent=4)
 
         with open(clubs_db, "w") as clubs_file:
-            json.dump(clubs, clubs_file, indent=4)
+            json.dump(clubs_data, clubs_file, indent=4)
 
         flash(
             f"Booking {placesRequired} place(s) for '{competition['name']}' complete! ({club["points"]} points available now)"

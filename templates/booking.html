@@ -11,7 +11,12 @@
     {% if club['points']|int == 0 %}
         <p>You don't have any points to spend.</p>
 
+    {% elif booking_possibility == 0 %}
+        <p>You can't purchase more than 12 places per competition.</p>
+
     {% else %}
+
+        <p>You already booked {{ 12 - booking_possibility }} places for this competition (12 max).</p>
         <form action="/purchasePlaces" method="post">
             <input type="hidden" name="club" value="{{club['name']}}">
             <input type="hidden" name="competition" value="{{competition['name']}}">
@@ -19,7 +24,7 @@
             <label for="places">How many places?</label>
             <select name="places" id="places">
                 {% for i in range(1, competition['numberOfPlaces']|int + 1) %}
-                    {% if i <= 12 and club['points']|int >= i %}
+                    {% if i <= 12 and club['points']|int >= i and booking_possibility >= i %}
                         <option value="{{ i }}">{{ i }}</option>
                     {% endif %}
                 {% endfor %}

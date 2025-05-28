@@ -8,11 +8,11 @@
         {
             "name": "She Lifts",
             "email": "kate@shelifts.co.uk",
-            "points": "6",
+            "points": "5",
             "booking": [
                 {
                     "competition_name": "Spring Festival",
-                    "numberOfBookedPlaces": "10"
+                    "numberOfBookedPlaces": "11"
                 }
             ]
         },

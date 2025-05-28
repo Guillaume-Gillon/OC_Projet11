@@ -3,17 +3,47 @@ from datetime import datetime
 from flask import Flask, render_template, request, redirect, flash, url_for, abort
 
 
-def loadClubs():
-    with open("clubs.json") as c:
-        listOfClubs = json.load(c)["clubs"]
-        sortedListOfClubs = sorted(listOfClubs, key=lambda club: club["name"])
-        return sortedListOfClubs
+class DataManager:
+    def __init__(self):
+        self.json_clubs_path = "clubs.json"
+        self.json_comp_path = "competitions.json"
+        self._clubs = []
+        self._competitions = []
+        self.load_all_data()  # Charger les données au démarrage
+
+    def _load_data_from_file(self, json_path, key):
+        with open(json_path, "r") as json_file:
+            return json.load(json_file).get(key, [])
+
+    def load_all_data(self):
+        """Charge toutes les données (clubs et compétitions) depuis les fichiers."""
+        self._clubs = self._load_data_from_file(self.json_clubs_path, "clubs")
+        self._clubs = sorted(self._clubs, key=lambda club: club["name"])
+
+        self._competitions = self._load_data_from_file(
+            self.json_comp_path, "competitions"
+        )
+
+    def get_clubs(self):
+        return self._clubs
+
+    def get_competitions(self):
+        return self._competitions
+
+    def save_clubs(self):
+        """Sauvegarde les clubs dans leur fichier JSON."""
+        with open(self.json_clubs_path, "w") as f:
+            json.dump({"clubs": self._clubs}, f, indent=4)
+
+    def save_competitions(self):
+        """Sauvegarde les compétitions dans leur fichier JSON."""
+        with open(self.json_comp_path, "w") as f:
+            json.dump({"competitions": self._competitions}, f, indent=4)
 
 
-def loadCompetitions():
-    with open("competitions.json") as comps:
-        listOfCompetitions = json.load(comps)["competitions"]
-        return listOfCompetitions
+data_manager = DataManager()
+clubs = data_manager.get_clubs()
+competitions = data_manager.get_competitions()
 
 
 def purchase_validation(competition, club, placesRequired, competition_date):
@@ -64,12 +94,6 @@ def purchase_validation(competition, club, placesRequired, competition_date):
 
 app = Flask(__name__)
 app.secret_key = "something_special"
-
-competitions = loadCompetitions()
-clubs = loadClubs()
-
-competitions_db = "competitions.json"
-clubs_db = "clubs.json"
 
 now = datetime.now()
 strptime = datetime.strptime
@@ -165,17 +189,11 @@ def purchasePlaces():
                     )
                     break
 
-        competitions_data = {"competitions": competitions}
-        clubs_data = {"clubs": clubs}
-
-        with open(competitions_db, "w") as comp_file:
-            json.dump(competitions_data, comp_file, indent=4)
-
-        with open(clubs_db, "w") as clubs_file:
-            json.dump(clubs_data, clubs_file, indent=4)
+        data_manager.save_competitions()
+        data_manager.save_clubs()
 
         flash(
-            f"Booking {placesRequired} place(s) for '{competition['name']}' complete! ({club["points"]} points available now)"
+            f"Booking {placesRequired} place(s) for '{competition['name']}' complete!"
         )
         return render_template(
             "welcome.html",

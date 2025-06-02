@@ -3,23 +3,23 @@
         {
             "name": "Iron Temple",
             "email": "admin@irontemple.com",
-            "points": "4"
+            "points": "100"
         },
         {
             "name": "She Lifts",
             "email": "kate@shelifts.co.uk",
-            "points": "5",
+            "points": "100",
             "booking": [
                 {
                     "competition_name": "Spring Festival",
-                    "numberOfBookedPlaces": "11"
+                    "numberOfBookedPlaces": "0"
                 }
             ]
         },
         {
             "name": "Simply Lift",
             "email": "john@simplylift.co",
-            "points": "12"
+            "points": "100"
         }
     ]
 }

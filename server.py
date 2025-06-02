@@ -48,15 +48,19 @@ competitions = data_manager.get_competitions()
 
 def purchase_validation(competition, club, placesRequired, competition_date):
     if placesRequired > int(club["points"]) or int(club["points"]) <= 0:
+        print("not enough points")
         return False, "Not enough points"
 
     elif placesRequired > 12:
+        print("places required > 12")
         return False, "Impossible to purchase more than 12 places"
 
     elif int(competition["numberOfPlaces"]) < placesRequired:
+        print("not enough places")
         return False, "Not enough places available"
 
     elif competition_date < now:
+        print("past competition")
         return False, "Impossible to purchase places of an ended competition"
 
     else:
@@ -75,11 +79,13 @@ def purchase_validation(competition, club, placesRequired, competition_date):
                             booked_places["numberOfBookedPlaces"]
                         )
                         if possible_purchase <= 0:
+                            print("already 12 places booked")
                             return (
                                 False,
                                 "You already have 12 places booked, you can't purchase more places.",
                             )
                         else:
+                            print("impossible")
                             return (
                                 False,
                                 f"You can't purchase more than {possible_purchase} place(s)",
@@ -162,6 +168,7 @@ def purchasePlaces():
     validation, description = purchase_validation(
         competition, club, placesRequired, competition_date
     )
+    print("toto")
 
     if not validation:
         abort(403, description=description)
@@ -188,9 +195,9 @@ def purchasePlaces():
                         total_after_purchase
                     )
                     break
-
-        data_manager.save_competitions()
-        data_manager.save_clubs()
+        # Commenter ces deux lignes avant d'exécuter locust
+        # data_manager.save_competitions()
+        # data_manager.save_clubs()
 
         flash(
             f"Booking {placesRequired} place(s) for '{competition['name']}' complete!"

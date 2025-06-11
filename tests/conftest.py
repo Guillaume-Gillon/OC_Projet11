@@ -5,8 +5,11 @@ import server
 
 @pytest.fixture
 def mock_data(monkeypatch, mocker):
+    # Création d'un objet mock_manager qui sera une fausse instance de server.DataManager
     mock_manager = mocker.Mock(spec=server.DataManager)
+    # Remplacement de la véritable instance data_manager du module server par mock_manager
     monkeypatch.setattr(server, "data_manager", mock_manager)
+
     # Assure que la date de la competition est toujours postérieure à la date actuelle
     now = datetime.now()
     date_competition = now + timedelta(days=1)

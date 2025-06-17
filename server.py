@@ -162,7 +162,6 @@ def purchasePlaces():
     validation, description = purchase_validation(
         competition, club, placesRequired, competition_date
     )
-    print("toto")
 
     if not validation:
         abort(403, description=description)
@@ -190,8 +189,8 @@ def purchasePlaces():
                     )
                     break
         # Commenter ces deux lignes avant d'exécuter locust
-        # data_manager.save_competitions()
-        # data_manager.save_clubs()
+        data_manager.save_competitions()
+        data_manager.save_clubs()
 
         flash(
             f"Booking {placesRequired} place(s) for '{competition['name']}' complete!"
